@@ -1,16 +1,19 @@
 # requires Docker version 17.05.0-ce-rc1, build 2878a85
 FROM maven:3.5-jdk-8 as BUILDRB
 
-COPY src /usr/src/myapp/src
-COPY pom.xml /usr/src/myapp
-COPY .git .git
-RUN mvn -f /usr/src/myapp/pom.xml clean package -DskipTests
+#COPY src /usr/src/myapp/src
+#COPY pom.xml /usr/src/myapp
+#COPY .git .git
+#RUN mvn -f /usr/src/myapp/pom.xml clean package -DskipTests
 
 FROM openjdk:alpine
 
 RUN apk --update add fontconfig ttf-dejavu
 
-COPY --from=BUILDRB /usr/src/myapp/target/*.jar /maven/
+#COPY --from=BUILDRB /usr/src/myapp/target/*.jar /maven/
+
+# Added to copy jar from local target folder
+COPY target/*.jar /maven/
 
 # set debug=true to get spring boot debug-level logging
 ENV debug=false

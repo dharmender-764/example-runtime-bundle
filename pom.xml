@@ -44,6 +44,14 @@
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
+	
+	<!-- Zorroa search client dependency -->
+    <dependency>
+    	<groupId>com.zorroa.archivist</groupId>
+	    <artifactId>archivist-client</artifactId>
+	    <version>0.40.0-SNAPSHOT</version>
+    </dependency>
+	
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
