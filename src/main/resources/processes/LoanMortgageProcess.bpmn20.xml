@@ -23,7 +23,7 @@ java.lang.System.out.println("Workflow completed with status COMPLETE for LOAN I
     <scriptTask id="scripttask4" name="Update Loan Id" scriptFormat="javascript" activiti:autoStoreVariables="false">
       <script>java.lang.System.out.println("Update loan id script task called");</script>
     </scriptTask>
-    <serviceTask id="servicetask1" name="Process Loan Mortgage QA" activiti:class="org.activiti.cloud.runtime.ZorroaDelegate"></serviceTask>
+    <serviceTask id="servicetask1" name="Process Loan Mortgage QA" activiti:class="com.ironmountain.rmaas.activiti.zorroa.ZorroaDelegate"></serviceTask>
     <sequenceFlow id="flow7" sourceRef="startevent1" targetRef="servicetask1"></sequenceFlow>
     <sequenceFlow id="flow8" sourceRef="servicetask1" targetRef="exclusivegateway1"></sequenceFlow>
     <sequenceFlow id="flow9" sourceRef="scripttask4" targetRef="servicetask1"></sequenceFlow>
