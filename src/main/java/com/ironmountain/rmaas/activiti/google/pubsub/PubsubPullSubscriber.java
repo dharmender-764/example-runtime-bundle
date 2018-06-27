@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
 
@@ -30,7 +31,7 @@ public class PubsubPullSubscriber {
 	@PostConstruct
 	public void initiateMessageReceiver() {
 
-		logger.info("Starting Google pub/sub pull subscriber with project id: " + projectId + " and subid: "
+		logger.info("******** Starting Google pub/sub pull subscriber with project id: " + projectId + " and subid: "
 				+ subscriptionId);
 
 		ProjectSubscriptionName subscriptionName = ProjectSubscriptionName.of(projectId, subscriptionId);
@@ -43,7 +44,7 @@ public class PubsubPullSubscriber {
 				System.out.println("	Id : " + message.getMessageId());
 				System.out.println("	Data : " + message.getData().toStringUtf8());
 
-				logger.debug("Got pub/sub message with Id: " + message.getMessageId() + " and data: "
+				logger.info("Got pub/sub message with Id: " + message.getMessageId() + " and data: "
 						+ message.getData().toStringUtf8());
 				consumer.ack();
 			}
@@ -53,6 +54,13 @@ public class PubsubPullSubscriber {
 			// Create a subscriber for "my-subscription-id" bound to the message receiver
 			subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
 			subscriber.startAsync();
+			
+			subscriber.addListener(new Subscriber.Listener() {
+				public void failed(Subscriber.State from, Throwable failure) {
+					logger.error("error getting pubsub message", failure);
+					failure.printStackTrace();
+				}
+			}, MoreExecutors.directExecutor());
 		} catch (Exception e) {
 			logger.error("Could not start google pub/sub pull subscriber for project id: " + projectId + " and subid: "
 					+ subscriptionId, e);
