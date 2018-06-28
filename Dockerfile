@@ -15,11 +15,11 @@ RUN apk --update add fontconfig ttf-dejavu
 # Added to copy jar from local target folder
 COPY target/*.jar /maven/
 COPY jetty-alpn-agent.jar /root/
-COPY rmaas-dit-1-2cb23d40da29.json /root/rmaas-dit-1-2cb23d40da29.json
+COPY rmaas-dit-1-2cb23d40da29.json /root/
 
 # set debug=true to get spring boot debug-level logging
 ENV debug=false
 # set REMOTE_DEBUG=true to enable connections to remote debug port
 ENV REMOTE_DEBUG=false
 
-CMD if [ "x$REMOTE_DEBUG" = "xfalse" ] ; then java $JAVA_OPTS -jar maven/*.jar ; else java $JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n -jar maven/*.jar ; fi
+CMD if [ "x$REMOTE_DEBUG" = "xfalse" ] ; then java $JAVA_OPTS -javaagent:/root/jetty-alpn-agent.jar -jar maven/*.jar ; else java $JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n -jar maven/*.jar ; fi
