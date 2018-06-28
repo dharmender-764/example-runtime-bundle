@@ -1,5 +1,7 @@
 package com.ironmountain.rmaas.activiti.google.pubsub;
 
+import java.io.FileInputStream;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -8,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -52,8 +56,10 @@ public class PubsubPullSubscriber {
 
 		try {
 			// Create a subscriber for "my-subscription-id" bound to the message receiver
-			subscriber = Subscriber.newBuilder(subscriptionName, receiver).build();
-			subscriber.startAsync();
+			ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(new FileInputStream("/root/rmaas-dit-1-2cb23d40da29.json"));
+			subscriber = Subscriber.newBuilder(subscriptionName, receiver)
+					.setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+					.build();
 			
 			subscriber.addListener(new Subscriber.Listener() {
 				public void failed(Subscriber.State from, Throwable failure) {
@@ -61,6 +67,8 @@ public class PubsubPullSubscriber {
 					failure.printStackTrace();
 				}
 			}, MoreExecutors.directExecutor());
+
+			subscriber.startAsync();
 		} catch (Exception e) {
 			logger.error("Could not start google pub/sub pull subscriber for project id: " + projectId + " and subid: "
 					+ subscriptionId, e);

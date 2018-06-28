@@ -14,6 +14,8 @@ RUN apk --update add fontconfig ttf-dejavu
 
 # Added to copy jar from local target folder
 COPY target/*.jar /maven/
+COPY jetty-alpn-agent.jar /root/
+COPY rmaas-dit-1-2cb23d40da29.json /root/rmaas-dit-1-2cb23d40da29.json
 
 # set debug=true to get spring boot debug-level logging
 ENV debug=false
