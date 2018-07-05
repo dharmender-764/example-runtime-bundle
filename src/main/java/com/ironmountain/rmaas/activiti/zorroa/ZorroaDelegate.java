@@ -39,7 +39,7 @@ public class ZorroaDelegate implements JavaDelegate, ApplicationContextAware {
 		} catch (IOException e) {
 			logger.error("Error performing zorroa search" + e);
 		}
-		execution.setVariable("resultCount", totalCount);
+		execution.setVariable("docCount", totalCount);
 	}
 
 	public void logDocuments(ZorroaSearchResponse searchResponse) {

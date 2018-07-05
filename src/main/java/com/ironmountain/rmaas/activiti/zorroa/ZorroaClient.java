@@ -89,7 +89,7 @@ public class ZorroaClient {
 		AssetSearch search = new AssetSearch().setFilter(new AssetFilter().addToTerms("media.author", "Iron Mountain"));
 
 		ZorroaSearchResponse result = client.post("/api/v4/assets/_search", search, ZorroaSearchResponse.class);
-		logger.info(Json.prettyString(result));
+		//logger.info(Json.prettyString(result));
 		System.out.println("totalCount from search = " + result.getPage().getTotalCount());
 		return result;
 	}

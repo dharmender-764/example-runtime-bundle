@@ -2,31 +2,27 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
   <process id="LoanMortgageProcess" name="Loan Mortgage Process" isExecutable="true">
     <startEvent id="startevent1" name="Start"></startEvent>
-    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway" default="flow4"></exclusiveGateway>
-    <scriptTask id="scripttask2" name="Set Loan Status Pending" scriptFormat="javascript" activiti:autoStoreVariables="false">
-      <script>var loanId = execution.getVariable("loanId");
-      var resultCount = execution.getVariable("resultCount");
-java.lang.System.out.println("Workflow completetd with status PENDING for LOAN ID: " + loanId + " with search resultCount: " + resultCount);</script>
-    </scriptTask>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway" default="flow10"></exclusiveGateway>
     <scriptTask id="scripttask3" name="Set Loan Status Complete" scriptFormat="javascript" activiti:autoStoreVariables="false">
       <script>var loanId = execution.getVariable("loanId");
-      var resultCount = execution.getVariable("resultCount");
-java.lang.System.out.println("Workflow completed with status COMPLETE for LOAN ID: " + loanId + " with search resultCount: " + resultCount);</script>
+      var docCount = execution.getVariable("docCount");
+java.lang.System.out.println("Workflow completed with status COMPLETE for LOAN ID: " + loanId + " with search docCount: " + docCount);</script>
     </scriptTask>
-    <sequenceFlow id="flow3" sourceRef="exclusivegateway1" targetRef="scripttask2">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${loanId == '123456'}]]></conditionExpression>
+    <sequenceFlow id="flow4" sourceRef="exclusivegateway1" targetRef="scripttask3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${docCount >= 4}]]></conditionExpression>
     </sequenceFlow>
-    <sequenceFlow id="flow4" sourceRef="exclusivegateway1" targetRef="scripttask3"></sequenceFlow>
     <endEvent id="endevent1" name="End"></endEvent>
-    <sequenceFlow id="flow5" sourceRef="scripttask2" targetRef="endevent1"></sequenceFlow>
     <sequenceFlow id="flow6" sourceRef="scripttask3" targetRef="endevent1"></sequenceFlow>
-    <scriptTask id="scripttask4" name="Update Loan Id" scriptFormat="javascript" activiti:autoStoreVariables="false">
-      <script>java.lang.System.out.println("Update loan id script task called");</script>
-    </scriptTask>
     <serviceTask id="servicetask1" name="Process Loan Mortgage QA" activiti:class="com.ironmountain.rmaas.activiti.zorroa.ZorroaDelegate"></serviceTask>
     <sequenceFlow id="flow7" sourceRef="startevent1" targetRef="servicetask1"></sequenceFlow>
     <sequenceFlow id="flow8" sourceRef="servicetask1" targetRef="exclusivegateway1"></sequenceFlow>
-    <sequenceFlow id="flow9" sourceRef="scripttask4" targetRef="servicetask1"></sequenceFlow>
+    <userTask id="usertask1" name="Update loan id wait task" isForCompensation="true" activiti:assignee="admin">
+      <extensionElements>
+        <activiti:taskListener event="complete" class="com.ironmountain.rmaas.activiti.LoanCompleteTaskDelegate"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow10" sourceRef="exclusivegateway1" targetRef="usertask1"></sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="usertask1" targetRef="endevent1"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_LoanMortgageProcess">
     <bpmndi:BPMNPlane bpmnElement="LoanMortgageProcess" id="BPMNPlane_LoanMortgageProcess">
@@ -36,39 +32,26 @@ java.lang.System.out.println("Workflow completed with status COMPLETE for LOAN I
       <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
         <omgdc:Bounds height="40.0" width="40.0" x="480.0" y="267.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="scripttask2" id="BPMNShape_scripttask2">
-        <omgdc:Bounds height="81.0" width="141.0" x="610.0" y="150.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="scripttask3" id="BPMNShape_scripttask3">
-        <omgdc:Bounds height="81.0" width="151.0" x="600.0" y="400.0"></omgdc:Bounds>
+        <omgdc:Bounds height="81.0" width="151.0" x="601.0" y="360.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="860.0" y="280.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="scripttask4" id="BPMNShape_scripttask4">
-        <omgdc:Bounds height="91.0" width="155.0" x="210.0" y="70.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
         <omgdc:Bounds height="101.0" width="155.0" x="210.0" y="237.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
-        <omgdi:waypoint x="500.0" y="267.0"></omgdi:waypoint>
-        <omgdi:waypoint x="500.0" y="190.0"></omgdi:waypoint>
-        <omgdi:waypoint x="610.0" y="190.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="108.0" width="153.0" x="600.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
         <omgdi:waypoint x="500.0" y="307.0"></omgdi:waypoint>
-        <omgdi:waypoint x="500.0" y="440.0"></omgdi:waypoint>
-        <omgdi:waypoint x="600.0" y="440.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
-        <omgdi:waypoint x="751.0" y="190.0"></omgdi:waypoint>
-        <omgdi:waypoint x="877.0" y="190.0"></omgdi:waypoint>
-        <omgdi:waypoint x="877.0" y="280.0"></omgdi:waypoint>
+        <omgdi:waypoint x="500.0" y="400.0"></omgdi:waypoint>
+        <omgdi:waypoint x="601.0" y="400.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
-        <omgdi:waypoint x="751.0" y="440.0"></omgdi:waypoint>
-        <omgdi:waypoint x="877.0" y="440.0"></omgdi:waypoint>
+        <omgdi:waypoint x="752.0" y="400.0"></omgdi:waypoint>
+        <omgdi:waypoint x="877.0" y="400.0"></omgdi:waypoint>
         <omgdi:waypoint x="877.0" y="315.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
@@ -79,9 +62,15 @@ java.lang.System.out.println("Workflow completed with status COMPLETE for LOAN I
         <omgdi:waypoint x="365.0" y="287.0"></omgdi:waypoint>
         <omgdi:waypoint x="480.0" y="287.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
-        <omgdi:waypoint x="287.0" y="161.0"></omgdi:waypoint>
-        <omgdi:waypoint x="287.0" y="237.0"></omgdi:waypoint>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="500.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="500.0" y="204.0"></omgdi:waypoint>
+        <omgdi:waypoint x="600.0" y="204.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
+        <omgdi:waypoint x="753.0" y="204.0"></omgdi:waypoint>
+        <omgdi:waypoint x="877.0" y="204.0"></omgdi:waypoint>
+        <omgdi:waypoint x="877.0" y="280.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
