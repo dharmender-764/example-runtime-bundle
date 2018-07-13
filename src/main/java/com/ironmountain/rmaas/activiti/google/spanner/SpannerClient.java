@@ -72,11 +72,16 @@ public class SpannerClient {
 	public void updateDocumentState(String documentGuid, int documentState) {
 		logger.info("updating spanner asset_metadata table with documentGuid: " + documentGuid + " and state: " + documentState);
 		
-		List<Mutation> mutations = Arrays.asList(Mutation.newUpdateBuilder("asset_metadata").set("document_guid")
-				.to(documentGuid).set("document_state").to(documentState).build());
-		Timestamp write = dbClient.write(mutations);
+		try {
+			List<Mutation> mutations = Arrays.asList(Mutation.newUpdateBuilder("asset_metadata").set("document_guid")
+					.to(documentGuid).set("document_state").to(documentState).build());
+			Timestamp write = dbClient.write(mutations);
 		
-		logger.info("spanner asset_metadata update complete at : " + write + " with documentGuid: " + documentGuid+ " and state: " + documentState);
+			logger.info("spanner asset_metadata update complete at : " + write + " with documentGuid: " + documentGuid+ " and state: " + documentState);
+		} catch (Exception e) {
+			logger.error("Could not update spanner asset_metadata table with documentGuid: " + documentGuid + " and state: " + documentState, e);
+		}
+		
 	}
 
 	@PreDestroy
