@@ -34,6 +34,7 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
+import com.ironmountain.rmaas.activiti.google.spanner.SpannerClient;
 
 @Component
 public class PubsubPullSubscriber {
@@ -54,6 +55,9 @@ public class PubsubPullSubscriber {
 
 	@Autowired
 	private PageableTaskService pageableTaskService;
+	
+	@Autowired
+	private SpannerClient spannerClient;
 
 	private Subscriber subscriber = null;
 
@@ -143,10 +147,17 @@ public class PubsubPullSubscriber {
 								variables.put("loanStatus", "Completed");
 								CompleteTaskCmd taskCmd = new CompleteTaskCmd(task.getId(), variables);
 								processEngine.completeTask(taskCmd);
-								
 							}
 							logger.info("Ending workflow now for loanid: " + loanId + " with process id: "+ processInstance.getId());
 							processEngine.suspend(new SuspendProcessInstanceCmd(processInstance.getId()));
+							
+							if (jsonObject.has("documentGuid")) {
+								String documentGuid = jsonObject.getString("documentGuid");
+								int documentState = jsonObject.has("documentState") ? jsonObject.getInt("documentState") : 1;
+								logger.info("Updating document: " + documentGuid + " with state: " + documentState + " in spanner...");
+								spannerClient.update(documentGuid, documentState);
+								logger.info("Update complete for document: " + documentGuid + " with state: " + documentState + " in spanner...");
+							}
 						} else {
 							logger.info("Workflow still waiting for some update for loanid: " + loanId + " with process id: "+ processInstance.getId());
 						}
