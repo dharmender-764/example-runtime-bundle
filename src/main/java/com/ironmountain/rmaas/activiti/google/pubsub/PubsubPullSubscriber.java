@@ -155,7 +155,7 @@ public class PubsubPullSubscriber {
 								String documentGuid = jsonObject.getString("documentGuid");
 								int documentState = jsonObject.has("documentState") ? jsonObject.getInt("documentState") : 1;
 								logger.info("Updating document: " + documentGuid + " with state: " + documentState + " in spanner...");
-								spannerClient.update(documentGuid, documentState);
+								spannerClient.updateDocumentState(documentGuid, documentState);
 								logger.info("Update complete for document: " + documentGuid + " with state: " + documentState + " in spanner...");
 							}
 						} else {
