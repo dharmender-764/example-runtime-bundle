@@ -1,5 +1,8 @@
 package com.ironmountain.rmaas.activiti.google.spanner;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
@@ -41,7 +46,17 @@ public class SpannerClient {
 
 	@PostConstruct
 	public void intiSpanner() {
-		SpannerOptions options = SpannerOptions.newBuilder().setProjectId("rmaas-dit-1").build();
+		
+		GoogleCredentials credentials = null;
+		try {
+			credentials = ServiceAccountCredentials.fromStream(new FileInputStream("/root/rmaas-dit-1-2cb23d40da29.json"));
+		} catch (FileNotFoundException e) {
+			logger.error("Credentials file not found, Could not initialize spanner", e);
+		} catch (IOException e) {
+			logger.error("Credentials IOException, Could not initialize spanner", e);
+		}
+		
+		SpannerOptions options = SpannerOptions.newBuilder().setProjectId("rmaas-dit-1").setCredentials(credentials).build();
 		Spanner spanner = options.getService();
 		try {
 			DatabaseId db = DatabaseId.of(options.getProjectId(), instanceId, dbId);
