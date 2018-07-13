@@ -61,6 +61,11 @@ public class SpannerClient {
 								Thread.sleep(10000);
 							}
 						} catch (Exception e) {
+							try {
+								Thread.sleep(10000);
+							} catch (InterruptedException e1) {
+								logger.error("Error sleeping spanner update thread", e);
+							}
 							logger.error("Error in spanner update thread", e);
 						}
 					}
