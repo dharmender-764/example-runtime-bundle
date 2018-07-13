@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class SpannerClient {
 
 	@Value("${gcp.spanner.dbid}")
 	private String dbId;
-	
+
 	@Value("${gcp.spanner.sample.documentguid}")
 	private String documentGuid;
 
@@ -46,59 +47,41 @@ public class SpannerClient {
 
 	@PostConstruct
 	public void intiSpanner() {
-		
-		GoogleCredentials credentials = null;
+
 		try {
-			credentials = ServiceAccountCredentials.fromStream(new FileInputStream("/root/rmaas-dit-1-2cb23d40da29.json"));
+			GoogleCredentials credentials = ServiceAccountCredentials
+					.fromStream(new FileInputStream("/root/rmaas-dit-1-2cb23d40da29.json"));
+
+			SpannerOptions options = SpannerOptions.newBuilder().setProjectId("rmaas-dit-1").setCredentials(credentials)
+					.build();
+			Spanner spanner = options.getService();
+			DatabaseId db = DatabaseId.of(options.getProjectId(), instanceId, dbId);
+
+			dbClient = spanner.getDatabaseClient(db);
+			dbAdminClient = spanner.getDatabaseAdminClient();
+
 		} catch (FileNotFoundException e) {
 			logger.error("Credentials file not found, Could not initialize spanner", e);
 		} catch (IOException e) {
 			logger.error("Credentials IOException, Could not initialize spanner", e);
-		}
-		
-		SpannerOptions options = SpannerOptions.newBuilder().setProjectId("rmaas-dit-1").setCredentials(credentials).build();
-		Spanner spanner = options.getService();
-		try {
-			DatabaseId db = DatabaseId.of(options.getProjectId(), instanceId, dbId);
-			dbClient = spanner.getDatabaseClient(db);
-			dbAdminClient = spanner.getDatabaseAdminClient();
-			
-			new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					while (true) {
-						try {
-							if (dbClient != null) {
-								update(documentGuid, 1);
-								Thread.sleep(10000);
-							} else {
-								Thread.sleep(10000);
-							}
-						} catch (Exception e) {
-							try {
-								Thread.sleep(10000);
-							} catch (InterruptedException e1) {
-								logger.error("Error sleeping spanner update thread", e);
-							}
-							logger.error("Error in spanner update thread", e);
-						}
-					}
-				}
-			}).start();
 		} catch (Exception e) {
 			logger.error("Could not initialize spanner", e);
 		}
 	}
 
-	public void update(String documentGuid, int documentState) {
-		logger.info("updating spanner asset_metadata table");
-		List<Mutation> mutations = Arrays.asList(Mutation.newUpdateBuilder("asset_metadata").set("document_guid").to(1)
-				.set("document_state").to(documentState).build());
+	public void updateDocumentState(String documentGuid, int documentState) {
+		logger.info("updating spanner asset_metadata table with documentGuid: " + documentGuid + " and state: " + documentState);
+		
+		List<Mutation> mutations = Arrays.asList(Mutation.newUpdateBuilder("asset_metadata").set("document_guid")
+				.to(documentGuid).set("document_state").to(documentState).build());
 		Timestamp write = dbClient.write(mutations);
-		logger.info("update complete: " + write);
+		
+		logger.info("spanner asset_metadata update complete at : " + write + " with documentGuid: " + documentGuid+ " and state: " + documentState);
 	}
-	
-	
+
+	@PreDestroy
+	public void stopMessageReciever() {
+		// TODO: Close spanner connection if can be done
+	}
 
 }
