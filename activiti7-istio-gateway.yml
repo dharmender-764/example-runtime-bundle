@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: activiti7-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: activiti7
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - activiti7-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /auth
+    route:
+    - destination:
+        host: activiti-cloud-sso-idm-kub
+        port:
+          number: 30081
+  - route:
+    - destination:
+        host: entrypoint
+        port:
+          number: 8080
