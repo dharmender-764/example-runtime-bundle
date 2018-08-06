@@ -1,0 +1,14 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: googleapis
+spec:
+  hosts:
+  - pubsub.googleapis.com
+  - core-data-vault-api-dot-rmaas-dit-1.appspot.com
+  - irm-training.pool.zorroa.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
